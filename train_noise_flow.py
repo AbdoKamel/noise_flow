@@ -5,6 +5,7 @@ import queue
 import socket
 import sys
 import time
+import warnings
 from datetime import datetime
 from os import path
 from threading import Thread
@@ -215,7 +216,6 @@ def init_params(hps1):
 
 
 def main(hps):
-
     # Download SIDD_Medium_Raw?
     check_download_sidd()
 
@@ -262,19 +262,22 @@ def main(hps):
     hps.n_dims = np.prod(x_shape[1:])
 
     # calculate data stats and baselines
-    logging.trace('calculating data stats and baselines...')
-    hps.calc_pat_stats_and_baselines_only = True
-    pat_stats, nll_gauss, _, nll_sdn, _ = initialize_data_stats_queues_baselines_histograms(hps, logdir)
-    hps.nll_gauss = nll_gauss
-    hps.nll_sdn = nll_sdn
+    # logging.trace('calculating data stats and baselines...')
+    # hps.calc_pat_stats_and_baselines_only = True
+    # pat_stats, nll_gauss, _, nll_sdn, _ = initialize_data_stats_queues_baselines_histograms(hps, logdir)
 
     # prepare get data queues
     hps.mb_requeue = True  # requeue minibatches for future epochs
     logging.trace('preparing data queues...')
     hps.calc_pat_stats_and_baselines_only = False
-    tr_im_que, ts_im_que, tr_pat_que, ts_pat_que, tr_batch_que, ts_batch_que = \
+    # tr_im_que, ts_im_que, tr_pat_que, ts_pat_que, tr_batch_que, ts_batch_que,\
+    tr_im_que, ts_im_que, tr_batch_que, ts_batch_que,\
+        pat_stats, nll_gauss, _, nll_sdn, _ = \
         initialize_data_stats_queues_baselines_histograms(hps, logdir)
     # hps.save_batches = True
+
+    hps.nll_gauss = nll_gauss
+    hps.nll_sdn = nll_sdn
 
     print_train_test_stats(hps)
 
@@ -379,6 +382,8 @@ def main(hps):
     logging.trace('Starting training/testing/samplings.')
     logging.trace('Logging to ' + logdir)
 
+    output_logger = ResultLogger(logdir + 'output.txt', ['output_str'], hps.continue_training)
+
     for epoch in range(start_epoch, hps.epochs + 1):
 
         # Testing
@@ -426,7 +431,7 @@ def main(hps):
         # End testing if & loop
 
         # Sampling (optional)
-        do_sampling = True  # make this true to perform sampling
+        do_sampling = False  # make this true to perform sampling
         if do_sampling and ((epoch < 10 or (epoch < 100 and epoch % 10 == 0) or  # (is_best == 1) or
                              epoch % hps.epochs_full_valid * 2 == 0.)):
             for temp in [1.0]:  # using only default temperature
@@ -521,16 +526,20 @@ def main(hps):
             # tL, sL, smL: loss of training, testing, sampling
             # SDr, SDs: std. dev. of base measure in training and testing
             # B: 1 if best model, 0 otherwise
-            print('%s %s %s E=%d tr=%.1f ts=%.1f tsm=%.1f tv=%.1f T=%.1f '
-                  'tL=%5.1f sL=%5.1f smL=%5.1f SDr=%.1f SDs=%.1f B=%d' %
-                  (str(datetime.now())[11:16], host, hps.logdirname, epoch, t_train, t_test, t_sample, dsample, t_curr,
-                   tr_l, ts_l, sam_l, sd_z_tr, sd_z_ts, is_best),
-                  end='')
+            output_str = ('%s %s %s E=%d tr=%.1f ts=%.1f tsm=%.1f tv=%.1f T=%.1f ' +
+                          'tL=%5.1f sL=%5.1f smL=%5.1f SDr=%.1f SDs=%.1f B=%d') % (
+                             str(datetime.now())[11:16], host, hps.logdirname, epoch, t_train, t_test, t_sample,
+                             dsample,
+                             t_curr, tr_l, ts_l, sam_l, sd_z_tr, sd_z_ts, is_best)
+            print(output_str, end='')
             if kldiv3 is not None:
                 print(' ', end='')
                 # marginal KL divergence of noise samples from: Gaussian, camera-NLF, and NoiseFlow, respectively
-                print(','.join('{0:.3f}'.format(kk) for kk in kldiv3), end='')
+                kldiv_str = ','.join('{0:.3f}'.format(kk) for kk in kldiv3)
+                output_str += ' ' + kldiv_str
+                print(kldiv_str, end='')
             print('', flush=True)
+            output_logger.log({'output_str': output_str + '\n'})
 
     total_time = time.time() - total_time
     logging.trace('Total time = %f' % total_time)
@@ -546,4 +555,6 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, lambda x, y: sys.exit(0))
 
     hps = arg_parser()
-    main(hps)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=DeprecationWarning)
+        main(hps)

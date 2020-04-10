@@ -252,11 +252,9 @@ def load_one_tuple_images(filepath_tuple):
 
     nlf0, nlf1 = get_nlf(metadata)
 
-    fparts = in_path.split('/')
-    sdir = fparts[-3]
-    if len(sdir) != 30:
-        sdir = fparts[-2]  # if subdirectory does not exist
+    sdir = os.path.split(os.path.split(in_path)[0])[1]
     iso = float(sdir[12:17])
+
     # max_iso = 3200.0
     # iso = iso / max_iso  # - 0.5  # TODO: is this okay?
     cam = float(['IP', 'GP', 'S6', 'N6', 'G4'].index(sdir[9:11]))

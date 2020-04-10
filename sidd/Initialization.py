@@ -35,7 +35,8 @@ def initialize_data_stats_queues_baselines_histograms(hps, logdir):
                                                     hps.camera, hps.iso)
 
     # image loaders
-    tr_im_que, ts_im_que = get_image_ques(hps, requeue=requeue, n_thr_im=n_thr_im, im_qsz=im_qsz)
+    tr_im_que, ts_im_que = get_image_ques(hps, requeue=requeue, n_thr_im=n_thr_im, im_qsz=im_qsz,
+                                          preload=True)
 
     # patch samplers
     # tr_patch_sampler = PatchSampler(tr_im_que, patch_height=hps.patch_height, sampling=hps.patch_sampling,
@@ -89,14 +90,14 @@ def initialize_data_stats_queues_baselines_histograms(hps, logdir):
                pat_stats, nll_gauss, bpd_gauss, nll_sdn, bpd_sdn
 
 
-def get_image_ques(hps, requeue, n_thr_im, im_qsz=16):
+def get_image_ques(hps, requeue, n_thr_im, im_qsz=16, preload=False):
     tr_fns, hps.n_tr_inst = sidd_filenames_que_inst(hps.sidd_path, 'train', hps.start_tr_im_idx, hps.end_tr_im_idx,
                                                     hps.camera, hps.iso)
     ts_fns, hps.n_ts_inst = sidd_filenames_que_inst(hps.sidd_path, 'test', hps.start_ts_im_idx, hps.end_ts_im_idx,
                                                     hps.camera, hps.iso)
     # image loaders
-    tr_image_loader = ImageLoader(tr_fns, max_queue_size=im_qsz, n_threads=n_thr_im, requeue=requeue)
-    ts_image_loader = ImageLoader(ts_fns, max_queue_size=im_qsz, n_threads=n_thr_im, requeue=requeue)
+    tr_image_loader = ImageLoader(tr_fns, max_queue_size=im_qsz, n_threads=n_thr_im, requeue=requeue, preload=preload)
+    ts_image_loader = ImageLoader(ts_fns, max_queue_size=im_qsz, n_threads=n_thr_im, requeue=requeue, preload=preload)
     tr_im_que = tr_image_loader.get_queue()
     ts_im_que = ts_image_loader.get_queue()
 

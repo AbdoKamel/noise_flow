@@ -14,7 +14,7 @@ from sidd.sidd_utils import pack_raw, get_nlf, load_one_tuple_images
 
 class ImageLoader:
 
-    def __init__(self, filename_tuple_queue, max_queue_size=4, n_threads=4, requeue=True):
+    def __init__(self, filename_tuple_queue, max_queue_size=4, n_threads=4, requeue=True, preload=False):
         # queue to pull filename tuples from
         # make sure to re-queue filename tuples again (for future epochs)
         self.filename_tuple_queue = filename_tuple_queue
@@ -30,6 +30,9 @@ class ImageLoader:
         # requeue items for more epochs
         self.requeue = requeue
 
+        self.preload = preload
+        self.image_dict = dict()
+
         # initialize threads
         self.threads = []
         self.n_threads = n_threads
@@ -42,15 +45,20 @@ class ImageLoader:
             # Dequeue filename tuple and load image tuple
             filename_tuple = self.filename_tuple_queue.get()
 
-            parts = str.split(filename_tuple[0], '/')
-            fn = parts[-3] + '|' + parts[-1]
-
-            noise, gt, var, nlf0, nlf1, iso, cam, metadata = load_one_tuple_images(filename_tuple)
-            im_dict = {'in': noise, 'gt': gt, 'vr': var, 'nlf0': nlf0, 'nlf1': nlf1, 'iso': iso, 'cam': cam,
-                       'fn': fn, 'metadata': metadata}
+            if self.preload and filename_tuple[0] in self.image_dict.keys():
+                im_dict = self.image_dict[filename_tuple[0]]
+            else:
+                parts = str.split(filename_tuple[0], '/')
+                fn = parts[-3] + '|' + parts[-1]
+                noise, gt, var, nlf0, nlf1, iso, cam, metadata = load_one_tuple_images(filename_tuple)
+                im_dict = {'in': noise, 'gt': gt, 'vr': var, 'nlf0': nlf0, 'nlf1': nlf1, 'iso': iso, 'cam': cam,
+                           'fn': fn, 'metadata': metadata}
 
             # Enqueue image tuple
             self.queue.put(im_dict)
+
+            if self.preload:
+                self.image_dict[filename_tuple[0]] = im_dict
 
             # Enqueue filename tuple back, for more epochs
             if self.requeue:

@@ -23,7 +23,7 @@ from sidd.Initialization import initialize_data_stats_queues_baselines_histogram
 from sidd.data_loader import check_download_sidd
 from sidd.sidd_utils import sidd_filenames_que_inst, restore_last_model, \
     divide_parts, calc_train_test_stats, print_train_test_stats, sample_sidd_tf, \
-    calc_kldiv_mb, kl_div_3_data
+    calc_kldiv_mb, kl_div_3_data, restore_epoch_model
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -358,8 +358,9 @@ def main(hps):
     logging.trace('continue_training = ' + str(hps.continue_training))
     if hps.continue_training:
         sess.run(tf.global_variables_initializer())
-        last_epoch = restore_last_model(ckpt_dir, sess, saver)
-        start_epoch = 1 + last_epoch
+        # last_epoch = restore_last_model(ckpt_dir, sess, saver)
+        restore_epoch_model(ckpt_dir, sess, saver, hps.continue_epoch)
+        start_epoch = 1 + hps.continue_epoch
         # noinspection PyBroadException
         try:
             train_op = tf.get_collection('train_op')  # [0]

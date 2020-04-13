@@ -125,6 +125,8 @@ def arg_parser():
                         help="Defines a mixture architecture of bijectors")
     parser.add_argument("--continue_training", action='store_true',
                         help="To continue training be loading last trained model, if any.")
+    parser.add_argument("--continue_epoch", type=int, default=0,
+                        help="To continue training be loading a specified epoch of trained model, if any.")
     parser.add_argument("--visualize_only", action='store_true',
                         help="To only visualize sampled noisy images.")
     parser.add_argument("--do_sample", action='store_true',

@@ -24,7 +24,7 @@ batch_size = 128
 
 
 def check_download_sidd(data_dir, dataset_filename, ftp_ip, ftp_user, ftp_pass):
-    sidd_path = os.path.join(data_dir, 'SIDD_Medium_Raw/Data')
+    sidd_path = os.path.join(data_dir, dataset_filename[:-4] + '/Data')
     sidd_medium_raw_url = 'ftp://' + ftp_user + ':' + ftp_pass + '@' + ftp_ip + '/' + dataset_filename
     if not exists(sidd_path):
         print(sidd_path + ' does not exist')

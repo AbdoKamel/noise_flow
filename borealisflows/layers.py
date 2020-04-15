@@ -467,25 +467,25 @@ def real_nvp_conv_template(
             num_output = (1 if shift_only else 2) * ic
 
             x = conv2d('l_1', x, width)
-            with warnings.catch_warnings():  # ignore np.asscalar() deprecated raised by tf.constant(True)
-                warnings.simplefilter("ignore")
-                x = tf.cond(
-                    tf.equal(is_training, tf.constant(True)),
-                    lambda: batch_norm(
-                        x, True, name='bn_nvp_conv_1'),
-                    lambda: batch_norm(
-                        x, False, name='bn_nvp_conv_1'))
+            # with warnings.catch_warnings():  # ignore np.asscalar() deprecated raised by tf.constant(True)
+            #     warnings.simplefilter("ignore")
+            #     x = tf.cond(
+            #         tf.equal(is_training, tf.constant(True)),
+            #         lambda: batch_norm(
+            #             x, True, name='bn_nvp_conv_1'),
+            #         lambda: batch_norm(
+            #             x, False, name='bn_nvp_conv_1'))
             x = activation(x)
 
             x = conv2d('l_2', x, width, filter_size=[1, 1])
-            with warnings.catch_warnings():  # ignore np.asscalar() deprecated raised by tf.constant(True)
-                warnings.simplefilter("ignore")
-                x = tf.cond(
-                    tf.equal(is_training, tf.constant(True)),
-                    lambda: batch_norm(
-                        x, True, name='bn_nvp_conv_2'),
-                    lambda: batch_norm(
-                        x, False, name='bn_nvp_conv_2'))
+            # with warnings.catch_warnings():  # ignore np.asscalar() deprecated raised by tf.constant(True)
+            #     warnings.simplefilter("ignore")
+            #     x = tf.cond(
+            #         tf.equal(is_training, tf.constant(True)),
+            #         lambda: batch_norm(
+            #             x, True, name='bn_nvp_conv_2'),
+            #         lambda: batch_norm(
+            #             x, False, name='bn_nvp_conv_2'))
             x = activation(x)
 
             x = conv2d_zeros('l_last', x, num_output)

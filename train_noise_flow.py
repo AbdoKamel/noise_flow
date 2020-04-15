@@ -217,7 +217,10 @@ def init_params(hps1):
 
 def main(hps):
     # Download SIDD_Medium_Raw?
-    check_download_sidd()
+    ftp_ip, ftp_user, ftp_pass = '130.63.97.225', 'sidd_user', 'sidd_2018'
+    data_dir = os.path.dirname(os.path.dirname(hps.sidd_path))
+    dataset_filename = os.path.basename(os.path.dirname(hps.sidd_path)) + '.zip'
+    check_download_sidd(data_dir, dataset_filename, ftp_ip, ftp_user, ftp_pass)
 
     total_time = time.time()
     host = socket.gethostname()

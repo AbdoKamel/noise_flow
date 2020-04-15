@@ -16,18 +16,20 @@ from sidd.pipeline import process_sidd_image
 from sidd.raw_utils import read_metadata
 from sidd.sidd_utils import unpack_raw
 
+
+# change these parameters when needed
 data_dir = 'data'
 sidd_path = os.path.join(data_dir, 'SIDD_Medium_Raw/Data')
 nf_model_path = 'models/NoiseFlow'
-
 samples_dir = os.path.join(data_dir, 'samples')
 os.makedirs(samples_dir, exist_ok=True)
 
 
 def main():
-
     # Download SIDD_Medium_Raw?
-    check_download_sidd()
+    dataset_filename = 'SIDD_Medium_Raw.zip'
+    ftp_ip, ftp_user, ftp_pass = '130.63.97.225', 'sidd_user', 'sidd_2018'
+    check_download_sidd(data_dir, dataset_filename, ftp_ip, ftp_user, ftp_pass)
 
     # set up a custom logger
     add_logging_level('TRACE', 100)
@@ -43,7 +45,8 @@ def main():
     for sc_id in [10, 52, 64]:  # scene IDs
 
         # load images
-        noisy = loader.load_raw_image_packed(glob.glob(os.path.join(sidd_path, '%04d_*' % sc_id, '*NOISY_RAW_010.MAT'))[0])
+        noisy = loader.load_raw_image_packed(
+            glob.glob(os.path.join(sidd_path, '%04d_*' % sc_id, '*NOISY_RAW_010.MAT'))[0])
         clean = loader.load_raw_image_packed(glob.glob(os.path.join(sidd_path, '%04d_*' % sc_id, '*GT_RAW_010.MAT'))[0])
         metadata, bayer_2by2, wb, cst2, iso, cam = read_metadata(
             glob.glob(os.path.join(sidd_path, '%04d_*' % sc_id, '*METADATA_RAW_010.MAT'))[0])
@@ -53,7 +56,6 @@ def main():
 
         n_pat = 10
         for p in range(n_pat):
-
             # crop patches
             v = np.random.randint(0, clean.shape[1] - patch_size)
             u = np.random.randint(0, clean.shape[2] - patch_size)
@@ -100,5 +102,3 @@ def load_cam_iso_nlf():
 
 if __name__ == '__main__':
     main()
-
-

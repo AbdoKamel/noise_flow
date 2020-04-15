@@ -23,24 +23,18 @@ scales = [1]  # [1, 0.9, 0.8, 0.7]
 batch_size = 128
 
 
-# change these parameters when needed
-sidd_medium_raw_url = 'ftp://sidd_user:sidd_2018@130.63.97.225/SIDD_Medium_Raw.zip'
-sidd_medium_raw_name = 'SIDD_Medium_Raw.zip'
-ftp_ip, ftp_user, ftp_pass = '130.63.97.225', 'sidd_user', 'sidd_2018'
-data_dir = './data'
-sidd_path = os.path.join(data_dir, 'SIDD_Medium_Raw/Data')
-
-
-def check_download_sidd():
+def check_download_sidd(data_dir, dataset_filename, ftp_ip, ftp_user, ftp_pass):
+    sidd_path = os.path.join(data_dir, 'SIDD_Medium_Raw/Data')
+    sidd_medium_raw_url = 'ftp://' + ftp_user + ':' + ftp_pass + '@' + ftp_ip + '/' + dataset_filename
     if not exists(sidd_path):
         print(sidd_path + ' does not exist')
-        zip_path = os.path.join(data_dir, sidd_medium_raw_name)
+        zip_path = os.path.join(data_dir, dataset_filename)
         if not exists(zip_path):
-            print('Downloading ' + sidd_medium_raw_name + ' from ' + sidd_medium_raw_url +
+            print('Downloading ' + dataset_filename + ' from ' + sidd_medium_raw_url +
                   ' (~20 GB, this may take a while)')
             print('To ' + zip_path)
-            download_ftp(sidd_medium_raw_name, zip_path, ftp_ip, ftp_user, ftp_pass)
-        print('Extracting ' + sidd_medium_raw_name + '... (this may take a while)')
+            download_ftp(dataset_filename, zip_path, ftp_ip, ftp_user, ftp_pass)
+        print('Extracting ' + dataset_filename + '... (this may take a while)')
         print('To ' + data_dir)
         extract_zip_progress(zip_path, data_dir)
 

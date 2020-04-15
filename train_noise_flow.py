@@ -265,9 +265,10 @@ def main(hps):
     hps.n_dims = np.prod(x_shape[1:])
 
     # calculate data stats and baselines
-    # logging.trace('calculating data stats and baselines...')
-    # hps.calc_pat_stats_and_baselines_only = True
-    # pat_stats, nll_gauss, _, nll_sdn, _ = initialize_data_stats_queues_baselines_histograms(hps, logdir)
+    if not os.path.exists(os.path.join(hps.logdir, 'pat_stats.npy')):
+        logging.trace('calculating data stats and baselines...')
+        hps.calc_pat_stats_and_baselines_only = True
+        pat_stats, nll_gauss, _, nll_sdn, _ = initialize_data_stats_queues_baselines_histograms(hps, logdir)
 
     # prepare get data queues
     hps.mb_requeue = True  # requeue minibatches for future epochs
